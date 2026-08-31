@@ -1,31 +1,27 @@
 # zunia-infra
 
-> Infrastructure as code for Zunia backend, DNS helpers, secrets layout, and monitoring.
+> Infrastructure-as-code for **platform hosting** that is not owned by a single app repo.
 
-**Status:** scaffold. Chain registry already has a `pulumi/` directory — decide reuse vs this repo (ADR below).
+## Role
+
+| Owns | Does not own |
+|------|----------------|
+| Always-on workers (tx realtime / indexer WS) on Fly/Railway/Render | Vercel project wiring for website/docs/dashboard (app repos + `vercel.json`) |
+| Shared DNS records for `api.`, `link.`, `status.` | Chain-registry deploy stack (`zunia-chain-registry/pulumi`) |
+| Secrets layout docs, monitoring stubs | Application business logic |
+
+**Tooling:** **Pulumi only** for this repo. Do not add a parallel Terraform tree — DNS/Cloudflare can be Pulumi providers. Registry keeps its own Pulumi project.
 
 ## Layout
 
 ```
-pulumi/       Preferred for Vercel-adjacent / multi-cloud workers
-terraform/    Optional DNS / Cloudflare modules
-docs/         Runbooks pointers → zunia-security
+pulumi/     App workers, DNS helpers, monitoring stubs
+docs/       Hosting ADRs / pointers
 ```
 
-## Domains (from DEPLOY.md + deep links)
+## Related ADRs
 
-| Host | Purpose |
-|------|---------|
-| `zuniawallet.com` | Marketing |
-| `docs.zuniawallet.com` | Docs |
-| `wallet.zuniawallet.com` | Dashboard |
-| `api.zuniawallet.com` | Backend |
-| `link.zuniawallet.com` | Universal / App Links |
-| `status.zuniawallet.com` | Status page |
-
-## Secrets
-
-Never commit. Use Vercel env / 1Password / Doppler. Template names live in each app's `.env.example`.
+- Indexer realtime worker must run on a **container host** (not Vercel serverless) — see `zunia-indexer/docs/adr/0003-realtime-worker-host.md`.
 
 ## License
 

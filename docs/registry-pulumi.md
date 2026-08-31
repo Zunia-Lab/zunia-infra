@@ -1,5 +1,7 @@
-# Reuse chain-registry Pulumi?
+# Pulumi vs registry
 
-`zunia-chain-registry` already contains `pulumi/` for registry hosting.
+`zunia-infra` owns **platform workers + shared DNS**.
 
-**Proposal:** keep registry deploy in that repo; use `zunia-infra` for API workers, push, DNS modules for `api.` / `link.` / `status.`, and shared monitoring. Avoid one mega-stack until Phase 3.
+`zunia-chain-registry/pulumi` stays for **registry hosting only**.
+
+Do not add Terraform in this repo.
