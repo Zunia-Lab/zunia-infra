@@ -1,0 +1,6 @@
+#name: zunia-infra
+# Pulumi project scaffold — implement after backend ADR + hosting choice
+
+name: zunia-infra
+runtime: nodejs
+description: Zunia Lab infrastructure (API workers, DNS helpers, monitoring)

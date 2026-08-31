@@ -1,0 +1,16 @@
+{
+  "name": "zunia-infra",
+  "version": "0.0.0",
+  "private": true,
+  "main": "pulumi/index.ts",
+  "scripts": {
+    "typecheck": "tsc -p tsconfig.json --noEmit"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "typescript": "^5.7.0"
+  },
+  "dependencies": {
+    "@pulumi/pulumi": "^3.140.0"
+  }
+}
