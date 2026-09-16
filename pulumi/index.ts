@@ -6,8 +6,8 @@ import * as pulumi from "@pulumi/pulumi";
 
 const cfg = new pulumi.Config("zunia");
 
-export const apiHostname = cfg.get("apiHostname") ?? "api.zuniawallet.com";
-export const linkHostname = cfg.get("linkHostname") ?? "link.zuniawallet.com";
-export const statusHostname = cfg.get("statusHostname") ?? "status.zuniawallet.com";
+export const apiHostname = cfg.get("apiHostname") ?? "api.zunialab.com";
+export const linkHostname = cfg.get("linkHostname") ?? "link.zunialab.com";
+export const statusHostname = cfg.get("statusHostname") ?? "status.zunialab.com";
 
 // Resources intentionally omitted.
