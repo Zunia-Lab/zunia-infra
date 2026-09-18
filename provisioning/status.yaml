@@ -1,0 +1,255 @@
+# Provisioning state. Runbook: ../docs/provisioning.md
+#
+# status: pending | in_progress | done | blocked | not_applicable
+# Items with `blocking:` list the build-plan gates they hold up. The release workflow
+# refuses to submit to a store while a blocking item for that store is not `done`.
+
+schema_version: 1
+last_reviewed: 2026-08-31
+
+legal:
+  entity_incorporated:
+    status: pending
+    owner: founder
+    blocking: [apple, play, chrome_web_store, edge_addons, amo]
+    notes: Jurisdiction and VASP/MiCA assessment tracked in the legal workstream.
+  duns_number:
+    status: pending
+    owner: founder
+    lead_time: 5-30 business days
+    blocking: [apple]
+  vasp_micar_opinion:
+    status: pending
+    owner: legal
+    blocking: [mainnet_launch]
+  terms_of_service:
+    status: pending
+    owner: legal
+    blocking: [chrome_web_store, apple, play]
+  privacy_policy:
+    status: pending
+    owner: legal
+    blocking: [chrome_web_store, apple, play]
+    notes: Must match zunia-backend/config/privacy.ts exactly, including opt-in defaults.
+
+domain:
+  dns_apex_and_www:
+    status: pending
+    owner: infra
+  dns_docs:
+    status: pending
+    owner: infra
+  dns_wallet:
+    status: pending
+    owner: infra
+  dns_api:
+    status: pending
+    owner: infra
+  dns_link:
+    status: pending
+    owner: infra
+    blocking: [mobile_deep_links]
+  dns_status:
+    status: pending
+    owner: infra
+  github_domain_verified:
+    status: pending
+    owner: infra
+
+email:
+  mailboxes:
+    status: pending
+    owner: infra
+    addresses: [hello, security, support, press]
+    blocking: [chrome_web_store, apple, play]
+  spf_dkim:
+    status: pending
+    owner: infra
+  dmarc_policy:
+    status: pending
+    owner: infra
+    target: p=reject
+    notes: Start at p=none with reporting, then quarantine, then reject.
+  security_pgp_key:
+    status: pending
+    owner: security
+    blocking: [security_txt]
+
+github:
+  org_2fa_required:
+    status: pending
+    owner: infra
+    blocking: [supply_chain_gate]
+  branch_protection_all_repos:
+    status: pending
+    owner: infra
+    blocking: [supply_chain_gate]
+  zunia_security_private_remote:
+    status: pending
+    owner: security
+    notes: Repository exists locally with no remote. Must be created private, never public.
+  codeowners_real_teams:
+    status: pending
+    owner: infra
+    notes: zunia-core/CODEOWNERS is a placeholder.
+
+npm:
+  scope_reserved:
+    status: pending
+    owner: release
+    blocking: [adr_0005_package_flow]
+  automation_token:
+    status: pending
+    owner: release
+  publish_2fa_required:
+    status: pending
+    owner: release
+
+apple:
+  organisation_enrolment:
+    status: pending
+    owner: mobile
+    lead_time: 2-6 weeks
+    blocking: [ios_release]
+    notes: >
+      App Review guideline 3.1.5(b) permits virtual currency storage only for organisation
+      accounts. An individual enrolment will be rejected after the work is done.
+  team_id_confirmed:
+    status: pending
+    owner: mobile
+    current_value_in_repo: 683ATPM9Y6
+    notes: Confirm this is the organisation team, not a personal team.
+  app_id_with_associated_domains:
+    status: pending
+    owner: mobile
+  apns_p8_key:
+    status: pending
+    owner: backend
+    blocking: [ios_push]
+  app_attest_registered:
+    status: pending
+    owner: mobile
+  apple_app_site_association_published:
+    status: pending
+    owner: mobile
+    notes: Placeholder TEAMID in zunia-website/public/.well-known/.
+  export_compliance_answers:
+    status: pending
+    owner: legal
+    blocking: [ios_release]
+
+play:
+  organisation_account:
+    status: pending
+    owner: mobile
+    lead_time: 1-3 weeks
+    blocking: [android_release]
+  financial_features_declaration:
+    status: pending
+    owner: legal
+    blocking: [android_release]
+  play_app_signing_sha256:
+    status: pending
+    owner: mobile
+    blocking: [android_app_links]
+    notes: >
+      Use the app signing key fingerprint, not the upload key. The wrong value breaks
+      Android App Links silently.
+  assetlinks_published:
+    status: pending
+    owner: mobile
+  play_integrity_credentials:
+    status: pending
+    owner: mobile
+  fastlane_service_account:
+    status: pending
+    owner: mobile
+
+extension_stores:
+  chrome_web_store:
+    status: pending
+    owner: extension
+    fee_usd: 5
+    review_lead_time: 1-3 weeks
+    blocking: [extension_launch]
+  edge_addons:
+    status: pending
+    owner: extension
+    fee_usd: 0
+    review_lead_time: days
+  firefox_amo:
+    status: pending
+    owner: extension
+    fee_usd: 0
+    notes: >
+      Requires a source code submission with reproducible build instructions because the
+      bundle is minified.
+  brave:
+    status: not_applicable
+    notes: Installs from the Chrome Web Store. No account, but keep its own test matrix row.
+  safari:
+    status: pending
+    owner: extension
+    notes: Deferred past launch. Needs the Apple account and a Mac App Store submission.
+
+services:
+  walletconnect_project_id:
+    status: pending
+    owner: infra
+    consumers:
+      - zunia-extension/.env.example WXT_WALLETCONNECT_PROJECT_ID
+      - zunia-mobile/config/connect.yaml walletconnect.project_id
+      - zunia-dashboard/.env.example NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID
+  firebase_fcm_service_account:
+    status: pending
+    owner: backend
+    notes: FCM HTTP v1 API. The legacy server key is deprecated and must not be used.
+  vapid_keys:
+    status: pending
+    owner: backend
+    blocking: [web_push]
+  neon_postgres:
+    status: pending
+    owner: infra
+  upstash_redis:
+    status: pending
+    owner: infra
+  realtime_worker_host:
+    status: pending
+    owner: infra
+    options: [fly, railway, render]
+    notes: Serverless cannot hold a WebSocket. See zunia-indexer ADR-0003.
+  vercel_projects:
+    status: pending
+    owner: infra
+    projects: [website, docs, dashboard]
+  vercel_queues_topic:
+    status: pending
+    owner: backend
+    topic: zunia-tx-events
+  sentry_org:
+    status: pending
+    owner: infra
+    notes: Configure PII scrubbing before the first event is sent.
+  status_page:
+    status: pending
+    owner: infra
+  secret_manager:
+    status: pending
+    owner: infra
+    options: [1password, doppler]
+
+security_programme:
+  audit_firm_engaged:
+    status: pending
+    owner: security
+    lead_time: 4-8 weeks
+    blocking: [mainnet_launch]
+  bug_bounty_platform:
+    status: pending
+    owner: security
+  named_security_owner:
+    status: pending
+    owner: founder
+    blocking: [phase_1_crypto]
+    notes: Must have authority to block a release.

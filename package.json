@@ -5,7 +5,8 @@
   "packageManager": "pnpm@9.15.0",
   "main": "pulumi/index.ts",
   "scripts": {
-    "typecheck": "tsc -p tsconfig.json --noEmit"
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "check:provisioning": "node scripts/check-provisioning.mjs"
   },
   "devDependencies": {
     "@types/node": "^22.0.0",

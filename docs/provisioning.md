@@ -42,7 +42,7 @@ Follow [../../DEPLOY.md](../../DEPLOY.md) for the record values. Hosts required:
 Email addresses, all required before store submission because the listings ask for a support
 contact and the security policy publishes a disclosure address:
 
-- `hello@`, `security@`, `support@`, `press@`
+- `hello@`, `security@`, `dev@`, `press@`
 
 Set SPF and DKIM immediately. Start DMARC at `p=none` with reporting, review the aggregate
 reports for two weeks, then move to `p=quarantine` and finally `p=reject`.

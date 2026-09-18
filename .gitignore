@@ -3,3 +3,18 @@ bin
 .pulumi
 *.log
 .DS_Store
+
+# Secrets: never commit. Only *.example templates are tracked.
+.env
+.env.*
+!.env.*.example
+*.pem
+*.p8
+*.p12
+*.jks
+*.keystore
+*.mobileprovision
+id_rsa*
+id_ed25519*
+*service-account*.json
+secrets/
