@@ -5,7 +5,7 @@
 # https://api.zunialab.com, which is baked in at `next build`.
 set -euo pipefail
 
-export PATH="/srv/zunia/toolchain/node/bin:/usr/bin:/bin"
+export PATH="/srv/zunia/toolchain/node/bin:/usr/sbin:/usr/bin:/bin"
 export NODE_OPTIONS="${NODE_OPTIONS:---max-old-space-size=3072}"
 ROOT=/srv/zunia/repos
 LOCK=/srv/zunia/shared/redeploy.lock
@@ -22,7 +22,7 @@ log() { printf '%s %s\n' "$(date -u +%H:%M:%S)" "$*"; }
 
 as_zunia() {
   # SCRIPT is the child program. stdin is closed so git cannot eat it.
-  runuser -u zunia -- env \
+  sudo -u zunia env \
     PATH="$PATH" \
     NODE_OPTIONS="$NODE_OPTIONS" \
     HOME=/home/zunia \
