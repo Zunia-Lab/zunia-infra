@@ -6,17 +6,18 @@
 
 | Owns | Does not own |
 |------|----------------|
-| Always-on workers (tx realtime / indexer WS) on Fly/Railway/Render | Vercel project wiring for website/docs/dashboard (app repos + `vercel.json`) |
+| Always-on workers on the Hetzner host (nginx + systemd). See [docs/hetzner.md](./docs/hetzner.md). | Vercel is not the production target for zunialab.com |
 | Shared DNS records for `api.`, `link.`, `status.` | Chain-registry deploy stack (`zunia-chain-registry/pulumi`) |
 | Secrets layout docs, monitoring stubs | Application business logic |
 
-**Tooling:** **Pulumi only** for this repo. Do not add a parallel Terraform tree — DNS/Cloudflare can be Pulumi providers. Registry keeps its own Pulumi project.
+**Production** is nginx and systemd on the Hetzner host. Snippets are in `deploy/`. Pulumi in this repo is still a stub.
 
 ## Layout
 
 ```
+deploy/              nginx vhosts and systemd units for the Hetzner host
 pulumi/              App workers, DNS helpers, monitoring stubs
-docs/                Hosting ADRs, security, audit, launch
+docs/                Hosting ADRs, security, audit, launch, Hetzner runbook
 config/sentry/       Scrubbing deny-list examples
 provisioning/        Env / secret checklists
 ```
