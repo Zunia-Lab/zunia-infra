@@ -1,0 +1,10 @@
+[Unit]
+Description=Probe the Zunia Connect WebSocket and report to Uptime Kuma
+After=docker.service network-online.target
+
+[Service]
+Type=oneshot
+User=zunia
+Group=zunia
+Environment=PATH=/srv/zunia/toolchain/node/bin:/usr/bin:/bin
+ExecStart=/srv/zunia/toolchain/node/bin/node /srv/zunia/repos/zunia-infra/deploy/uptime-kuma/probe-connect-ws.mjs

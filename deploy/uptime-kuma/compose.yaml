@@ -1,0 +1,14 @@
+# Local-only. nginx on this host publishes the status page.
+# Admin UI stays on 127.0.0.1:3015 (SSH tunnel). Do not publish 3015.
+services:
+  uptime-kuma:
+    image: louislam/uptime-kuma:2
+    container_name: zunia-uptime-kuma
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:3015:3001"
+    volumes:
+      - /srv/zunia/shared/uptime-kuma:/app/data
+    environment:
+      UPTIME_KUMA_DB_TYPE: sqlite
+      UPTIME_KUMA_DISABLE_FRAME_SAMEORIGIN: "true"

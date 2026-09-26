@@ -14,7 +14,7 @@ This host also runs other sites. Do not enable a host-wide firewall that would c
 | `wallet.zunialab.com` | `zunia-dashboard` | `127.0.0.1:3012` |
 | `api.zunialab.com`, `backend.zunialab.com` | `zunia-backend` | `127.0.0.1:8788` |
 | `indexer.zunialab.com` | `zunia-indexer` | `127.0.0.1:8787` |
-| `status.zunialab.com` | static page | `/srv/zunia/shared/status` |
+| `status.zunialab.com` | Uptime Kuma | `127.0.0.1:3015` |
 
 `3010` and `3012` are used because `3000` and `3001` are already taken on this machine. Connect WebSocket is `wss://api.zunialab.com/v1/connect/ws`.
 
@@ -67,6 +67,12 @@ sudo certbot certonly --dns-cloudflare \
 `/etc/letsencrypt/cloudflare.ini` is mode 600 and is not in git. Cloudflare SSL mode is Full (strict). WebSockets are enabled on the zone.
 
 nginx snippets live in `deploy/nginx/`. The Connect location sets `Upgrade` and a one-hour read timeout.
+
+## Status
+
+Uptime Kuma runs in Docker (`deploy/uptime-kuma/compose.yaml`) and only listens on `127.0.0.1:3015`. `status.zunialab.com` is mapped to the public status page. The admin UI is the same port over an SSH tunnel, not a public path.
+
+A timer (`zunia-connect-ws-probe`) opens a real Connect session once a minute and pushes the handshake result. A bare WebSocket to `/v1/connect/ws` is refused, so that probe is what makes the WSS row honest.
 
 ## Postgres
 
