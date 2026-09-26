@@ -49,6 +49,8 @@ cd /srv/zunia/repos/zunia-indexer && pnpm db:migrate
 sudo systemctl restart zunia-website zunia-dashboard zunia-backend zunia-indexer
 ```
 
+`zunia-redeploy.timer` runs that pull on its own, every two minutes, and only rebuilds a repo whose `origin/main` moved. `zunia-ui` or `zunia-sdk` moving also rebuilds the apps that link them. The browser connect URL baked into the dashboard is `https://api.zunialab.com`. The dashboard process on this host still calls the indexer and backend on `127.0.0.1`.
+
 Build `zunia-ui` and `zunia-sdk` before the Next apps. Their packages are linked, not published.
 
 ## TLS

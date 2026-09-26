@@ -1,0 +1,9 @@
+[Unit]
+Description=Pull and rebuild Zunia when main moves
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+ExecStart=/srv/zunia/shared/redeploy.sh
+Nice=10

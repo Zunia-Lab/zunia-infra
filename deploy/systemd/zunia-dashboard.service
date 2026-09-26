@@ -11,6 +11,7 @@ Environment=PATH=/srv/zunia/toolchain/node/bin:/usr/bin:/bin
 Environment=NODE_ENV=production
 Environment=PORT=3012
 Environment=HOSTNAME=127.0.0.1
+EnvironmentFile=/srv/zunia/shared/dashboard.env
 ExecStart=/srv/zunia/toolchain/node/bin/node node_modules/next/dist/bin/next start -p 3012 -H 127.0.0.1
 Restart=on-failure
 RestartSec=3
