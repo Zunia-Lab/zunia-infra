@@ -15,6 +15,7 @@ This host also runs other sites. Do not enable a host-wide firewall that would c
 | `api.zunialab.com`, `backend.zunialab.com` | `zunia-backend` | `127.0.0.1:8788` |
 | `indexer.zunialab.com` | `zunia-indexer` | `127.0.0.1:8787` |
 | `status.zunialab.com` | Uptime Kuma | `127.0.0.1:3015` |
+| `updates.zunialab.com` | `zunia-updates` | `127.0.0.1:3016` |
 
 `3010` and `3012` are used because `3000` and `3001` are already taken on this machine. Connect WebSocket is `wss://api.zunialab.com/v1/connect/ws`.
 
@@ -36,7 +37,7 @@ Leave `mail.zunialab.com` on the mail host.
 export PATH=/srv/zunia/toolchain/node/bin:$PATH
 cd /srv/zunia/repos/zunia-ui && git pull --ff-only && pnpm install --frozen-lockfile && pnpm build
 cd /srv/zunia/repos/zunia-sdk && git pull --ff-only && pnpm install --frozen-lockfile && pnpm build
-for repo in zunia-website zunia-dashboard zunia-docs zunia-backend zunia-indexer; do
+for repo in zunia-website zunia-dashboard zunia-docs zunia-backend zunia-indexer zunia-updates; do
   cd /srv/zunia/repos/$repo
   git pull --ff-only
   pnpm install --frozen-lockfile
@@ -46,7 +47,7 @@ set -a; . /srv/zunia/shared/backend.env; set +a
 cd /srv/zunia/repos/zunia-backend && pnpm db:migrate
 set -a; . /srv/zunia/shared/indexer.env; set +a
 cd /srv/zunia/repos/zunia-indexer && pnpm db:migrate
-sudo systemctl restart zunia-website zunia-dashboard zunia-backend zunia-indexer
+sudo systemctl restart zunia-website zunia-dashboard zunia-backend zunia-indexer zunia-updates
 ```
 
 `zunia-redeploy.timer` runs that pull on its own, every two minutes, and only rebuilds a repo whose `origin/main` moved. `zunia-ui` or `zunia-sdk` moving also rebuilds the apps that link them. The browser connect URL baked into the dashboard is `https://api.zunialab.com`. The dashboard process on this host still calls the indexer and backend on `127.0.0.1`.
@@ -63,7 +64,8 @@ sudo certbot certonly --dns-cloudflare \
   --dns-cloudflare-propagation-seconds 30 \
   -d zunialab.com -d www.zunialab.com -d docs.zunialab.com \
   -d wallet.zunialab.com -d api.zunialab.com -d backend.zunialab.com \
-  -d indexer.zunialab.com -d link.zunialab.com -d status.zunialab.com
+  -d indexer.zunialab.com -d link.zunialab.com -d status.zunialab.com \
+  -d updates.zunialab.com
 ```
 
 `/etc/letsencrypt/cloudflare.ini` is mode 600 and is not in git. Cloudflare SSL mode is Full (strict). WebSockets are enabled on the zone.
@@ -78,4 +80,12 @@ A timer (`zunia-connect-ws-probe`) opens a real Connect session once a minute an
 
 ## Postgres
 
-Local cluster only. Role `zunia_app` owns `zunia_backend` and `zunia_indexer`. Connection strings are in `/srv/zunia/shared/backend.env` and `indexer.env`.
+Local cluster only. Role `zunia_app` owns `zunia_backend`, `zunia_indexer`, and `zunia_updates`. Connection strings are in `/srv/zunia/shared/backend.env`, `indexer.env`, and `updates.env`.
+
+`updates.env` also holds `ADMIN_TOKEN`, the Turnstile keys, and optional Cloudflare Access settings. Create the database before the first boot:
+
+```bash
+sudo -u postgres createdb -O zunia_app zunia_updates
+```
+
+The Turnstile widget and the Access application for `updates.zunialab.com/admin` are created in the Cloudflare dashboard. DNS is a proxied A/AAAA for `updates`, same addresses as the other hosts. Reissue the certificate after adding the name, using the `certbot` command above.

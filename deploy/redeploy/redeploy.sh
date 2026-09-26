@@ -117,6 +117,8 @@ sync_infra() {
   install -m 644 "$ROOT/zunia-infra/deploy/systemd/zunia-redeploy.service" /etc/systemd/system/zunia-redeploy.service
   install -m 644 "$ROOT/zunia-infra/deploy/systemd/zunia-redeploy.timer" /etc/systemd/system/zunia-redeploy.timer
   install -m 644 "$ROOT/zunia-infra/deploy/systemd/zunia-dashboard.service" /etc/systemd/system/zunia-dashboard.service
+  install -m 644 "$ROOT/zunia-infra/deploy/systemd/zunia-updates.service" /etc/systemd/system/zunia-updates.service
+  ln -sfn /etc/nginx/sites-available/updates.zunialab.com.conf /etc/nginx/sites-enabled/updates.zunialab.com.conf
   nginx -t
   systemctl reload nginx
   systemctl daemon-reload
@@ -135,6 +137,7 @@ docs=same
 backend=same
 indexer=same
 infra=same
+updates=same
 
 ui="$(pull_repo zunia-ui | tail -n 1)"
 sdk="$(pull_repo zunia-sdk | tail -n 1)"
@@ -144,13 +147,19 @@ docs="$(pull_repo zunia-docs | tail -n 1)"
 backend="$(pull_repo zunia-backend | tail -n 1)"
 indexer="$(pull_repo zunia-indexer | tail -n 1)"
 infra="$(pull_repo zunia-infra | tail -n 1)"
+if [ -d "$ROOT/zunia-updates" ]; then
+  updates="$(pull_repo zunia-updates | tail -n 1)"
+fi
 
-log "ui=$ui sdk=$sdk website=$website dashboard=$dashboard docs=$docs backend=$backend indexer=$indexer infra=$infra"
+log "ui=$ui sdk=$sdk website=$website dashboard=$dashboard docs=$docs backend=$backend indexer=$indexer infra=$infra updates=$updates"
 
 if [ "$ui" = "changed" ]; then
   build_repo zunia-ui
   website=changed
   dashboard=changed
+  if [ -d "$ROOT/zunia-updates" ]; then
+    updates=changed
+  fi
 fi
 if [ "$sdk" = "changed" ]; then
   build_repo zunia-sdk
@@ -178,6 +187,15 @@ if [ "$indexer" = "changed" ]; then
   build_repo zunia-indexer
   as_zunia "set -a && . /srv/zunia/shared/indexer.env && set +a && cd '$ROOT/zunia-indexer' && pnpm db:migrate"
   systemctl restart zunia-indexer
+fi
+if [ "$updates" = "changed" ]; then
+  if [ ! -f /srv/zunia/shared/updates.env ]; then
+    log "updates.env missing, skip zunia-updates"
+  else
+    log "build zunia-updates"
+    as_zunia "set -a && . /srv/zunia/shared/updates.env && set +a && cd '$ROOT/zunia-updates' && pnpm install --frozen-lockfile && pnpm build && pnpm db:migrate"
+    systemctl restart zunia-updates
+  fi
 fi
 if [ "$infra" = "changed" ]; then
   sync_infra
