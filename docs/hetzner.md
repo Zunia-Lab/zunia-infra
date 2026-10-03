@@ -16,6 +16,7 @@ This host also runs other sites. Do not enable a host-wide firewall that would c
 | `indexer.zunialab.com` | `zunia-indexer` | `127.0.0.1:8787` |
 | `status.zunialab.com` | Uptime Kuma | `127.0.0.1:3015` |
 | `updates.zunialab.com` | `zunia-updates` | `127.0.0.1:3016` |
+| `ibcmap.zunialab.com` | `zunia-mapzone` (Map Zone) | `127.0.0.1:3017` |
 
 `3010` and `3012` are used because `3000` and `3001` are already taken on this machine. Connect WebSocket is `wss://api.zunialab.com/v1/connect/ws`.
 
@@ -27,6 +28,7 @@ Leave `mail.zunialab.com` on the mail host.
 /srv/zunia/repos/          git checkouts (siblings, so pnpm link:../ works)
 /srv/zunia/toolchain/node  Node 22 + pnpm
 /srv/zunia/shared/*.env    mode 600, not in git
+/srv/zunia/shared/mapzone/ Map Zone engine state (registry cache, logos, rolling stats)
 /etc/nginx/sites-enabled/  copies of deploy/nginx/*.conf
 /etc/systemd/system/       copies of deploy/systemd/*.service
 ```
@@ -65,7 +67,7 @@ sudo certbot certonly --dns-cloudflare \
   -d zunialab.com -d www.zunialab.com -d docs.zunialab.com \
   -d wallet.zunialab.com -d api.zunialab.com -d backend.zunialab.com \
   -d indexer.zunialab.com -d link.zunialab.com -d status.zunialab.com \
-  -d updates.zunialab.com
+  -d updates.zunialab.com -d ibcmap.zunialab.com
 ```
 
 `/etc/letsencrypt/cloudflare.ini` is mode 600 and is not in git. Cloudflare SSL mode is Full (strict). WebSockets are enabled on the zone.
@@ -89,3 +91,13 @@ sudo -u postgres createdb -O zunia_app zunia_updates
 ```
 
 The Turnstile widget and the Access application for `updates.zunialab.com/admin` are created in the Cloudflare dashboard. DNS is a proxied A/AAAA for `updates`, same addresses as the other hosts. Reissue the certificate after adding the name, using the `certbot` command above.
+
+## Map Zone
+
+`ibcmap.zunialab.com` runs `zunia-mapzone`: one long-lived Next.js process whose engine holds WebSocket subscriptions to the chains' public RPC nodes, reads the Cosmos chain registry from GitHub every six hours, and streams to browsers over Server-Sent Events (`/api/stream`, unbuffered in nginx, pinged every 15 s).
+
+- Unit `zunia-mapzone.service`, env `/srv/zunia/shared/mapzone.env` (mode 600): `TURNSTILE_SITE_KEY`, `TURNSTILE_SECRET_KEY` (the `zunialab.com` Turnstile widget, which covers subdomains), `MAPZONE_GATE_SECRET` (HMAC key for the pass cookie), `MAPZONE_GATE_HOSTS=ibcmap.zunialab.com`, `TRUST_PROXY=cloudflare`. Optional: `COINGECKO_API_KEY`, `GITHUB_TOKEN`.
+- State in `/srv/zunia/shared/mapzone/`, owned by `zunia`. Deleting it is safe: the registry is rebuilt from GitHub (or the committed seed) and the rolling windows start empty, which the UI reports as not observed.
+- `/api/health` reports the registry, streaming zones and connected viewers.
+- The redeploy timer rebuilds it when `zunia-mapzone` or `zunia-ui` moves; it is skipped while `mapzone.env` is missing.
+

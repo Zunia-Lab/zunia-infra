@@ -118,7 +118,9 @@ sync_infra() {
   install -m 644 "$ROOT/zunia-infra/deploy/systemd/zunia-redeploy.timer" /etc/systemd/system/zunia-redeploy.timer
   install -m 644 "$ROOT/zunia-infra/deploy/systemd/zunia-dashboard.service" /etc/systemd/system/zunia-dashboard.service
   install -m 644 "$ROOT/zunia-infra/deploy/systemd/zunia-updates.service" /etc/systemd/system/zunia-updates.service
+  install -m 644 "$ROOT/zunia-infra/deploy/systemd/zunia-mapzone.service" /etc/systemd/system/zunia-mapzone.service
   ln -sfn /etc/nginx/sites-available/updates.zunialab.com.conf /etc/nginx/sites-enabled/updates.zunialab.com.conf
+  ln -sfn /etc/nginx/sites-available/ibcmap.zunialab.com.conf /etc/nginx/sites-enabled/ibcmap.zunialab.com.conf
   nginx -t
   systemctl reload nginx
   systemctl daemon-reload
@@ -138,6 +140,7 @@ backend=same
 indexer=same
 infra=same
 updates=same
+mapzone=same
 
 ui="$(pull_repo zunia-ui | tail -n 1)"
 sdk="$(pull_repo zunia-sdk | tail -n 1)"
@@ -150,8 +153,11 @@ infra="$(pull_repo zunia-infra | tail -n 1)"
 if [ -d "$ROOT/zunia-updates" ]; then
   updates="$(pull_repo zunia-updates | tail -n 1)"
 fi
+if [ -d "$ROOT/zunia-mapzone" ]; then
+  mapzone="$(pull_repo zunia-mapzone | tail -n 1)"
+fi
 
-log "ui=$ui sdk=$sdk website=$website dashboard=$dashboard docs=$docs backend=$backend indexer=$indexer infra=$infra updates=$updates"
+log "ui=$ui sdk=$sdk website=$website dashboard=$dashboard docs=$docs backend=$backend indexer=$indexer infra=$infra updates=$updates mapzone=$mapzone"
 
 if [ "$ui" = "changed" ]; then
   build_repo zunia-ui
@@ -159,6 +165,9 @@ if [ "$ui" = "changed" ]; then
   dashboard=changed
   if [ -d "$ROOT/zunia-updates" ]; then
     updates=changed
+  fi
+  if [ -d "$ROOT/zunia-mapzone" ]; then
+    mapzone=changed
   fi
 fi
 if [ "$sdk" = "changed" ]; then
@@ -195,6 +204,14 @@ if [ "$updates" = "changed" ]; then
     log "build zunia-updates"
     as_zunia "set -a && . /srv/zunia/shared/updates.env && set +a && cd '$ROOT/zunia-updates' && pnpm install --frozen-lockfile && pnpm build && pnpm db:migrate"
     systemctl restart zunia-updates
+  fi
+fi
+if [ "$mapzone" = "changed" ]; then
+  if [ ! -f /srv/zunia/shared/mapzone.env ]; then
+    log "mapzone.env missing, skip zunia-mapzone"
+  else
+    build_repo zunia-mapzone
+    systemctl restart zunia-mapzone
   fi
 fi
 if [ "$infra" = "changed" ]; then

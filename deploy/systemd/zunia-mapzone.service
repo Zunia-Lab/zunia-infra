@@ -1,0 +1,25 @@
+[Unit]
+Description=Zunia Map Zone
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=zunia
+Group=zunia
+WorkingDirectory=/srv/zunia/repos/zunia-mapzone
+Environment=PATH=/srv/zunia/toolchain/node/bin:/usr/bin:/bin
+Environment=NODE_ENV=production
+Environment=PORT=3017
+Environment=HOSTNAME=127.0.0.1
+# Registry cache, logo cache and rolling stats live outside the checkout, so a pull never touches them.
+Environment=MAPZONE_DATA_DIR=/srv/zunia/shared/mapzone
+EnvironmentFile=/srv/zunia/shared/mapzone.env
+ExecStart=/srv/zunia/toolchain/node/bin/node node_modules/next/dist/bin/next start -p 3017 -H 127.0.0.1
+Restart=on-failure
+RestartSec=5
+# The engine writes its rolling stats synchronously on SIGTERM.
+TimeoutStopSec=20
+
+[Install]
+WantedBy=multi-user.target
