@@ -11,7 +11,8 @@ This host also runs other sites. Do not enable a host-wide firewall that would c
 | `zunialab.com`, `www` | `zunia-website` | `127.0.0.1:3010` |
 | `link.zunialab.com` | same website (App Links) | `127.0.0.1:3010` |
 | `docs.zunialab.com` | static `zunia-docs/build` | nginx root |
-| `wallet.zunialab.com` | `zunia-dashboard` | `127.0.0.1:3012` |
+| `app.zunialab.com` | `zunia-dashboard` (web app) | `127.0.0.1:3012` |
+| `wallet.zunialab.com`, `dashboard.zunialab.com` | 301 to `app.zunialab.com` (wallet until v2 is live there) | nginx |
 | `api.zunialab.com`, `backend.zunialab.com` | `zunia-backend` | `127.0.0.1:8788` |
 | `indexer.zunialab.com` | `zunia-indexer` | `127.0.0.1:8787` |
 | `status.zunialab.com` | Uptime Kuma | `127.0.0.1:3015` |
@@ -65,7 +66,8 @@ sudo certbot certonly --dns-cloudflare \
   --dns-cloudflare-credentials /etc/letsencrypt/cloudflare.ini \
   --dns-cloudflare-propagation-seconds 30 \
   -d zunialab.com -d www.zunialab.com -d docs.zunialab.com \
-  -d wallet.zunialab.com -d api.zunialab.com -d backend.zunialab.com \
+  -d wallet.zunialab.com -d app.zunialab.com -d dashboard.zunialab.com \
+  -d api.zunialab.com -d backend.zunialab.com \
   -d indexer.zunialab.com -d link.zunialab.com -d status.zunialab.com \
   -d updates.zunialab.com -d ibcmap.zunialab.com
 ```

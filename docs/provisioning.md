@@ -34,7 +34,7 @@ Follow [../../DEPLOY.md](../../DEPLOY.md) for the record values. Hosts required:
 
 - `zunialab.com` and `www`, website
 - `docs.zunialab.com`, docs
-- `wallet.zunialab.com`, dashboard
+- `app.zunialab.com`, the web app (dashboard); `wallet.zunialab.com` and `dashboard.zunialab.com` redirect to it
 - `api.zunialab.com`, backend
 - `link.zunialab.com`, universal and app links
 - `status.zunialab.com`, status page
