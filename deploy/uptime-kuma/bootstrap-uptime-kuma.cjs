@@ -116,7 +116,7 @@ async function main() {
     }),
     monitor({ name: "Website", type: "http", url: "https://zunialab.com" }),
     monitor({ name: "Docs", type: "http", url: "https://docs.zunialab.com" }),
-    monitor({ name: "Wallet", type: "http", url: "https://wallet.zunialab.com" }),
+    monitor({ name: "Web app", type: "http", url: "https://app.zunialab.com/api/health" }),
     monitor({ name: "Link host", type: "http", url: "https://link.zunialab.com/.well-known/security.txt" }),
   ];
 

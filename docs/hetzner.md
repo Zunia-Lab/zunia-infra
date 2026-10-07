@@ -12,7 +12,7 @@ This host also runs other sites. Do not enable a host-wide firewall that would c
 | `link.zunialab.com` | same website (App Links) | `127.0.0.1:3010` |
 | `docs.zunialab.com` | static `zunia-docs/build` | nginx root |
 | `app.zunialab.com` | `zunia-dashboard` (web app) | `127.0.0.1:3012` |
-| `wallet.zunialab.com`, `dashboard.zunialab.com` | 301 to `app.zunialab.com` (wallet until v2 is live there) | nginx |
+| `wallet.zunialab.com`, `dashboard.zunialab.com` | 301 to `app.zunialab.com` | nginx |
 | `api.zunialab.com`, `backend.zunialab.com` | `zunia-backend` | `127.0.0.1:8788` |
 | `indexer.zunialab.com` | `zunia-indexer` | `127.0.0.1:8787` |
 | `status.zunialab.com` | Uptime Kuma | `127.0.0.1:3015` |
