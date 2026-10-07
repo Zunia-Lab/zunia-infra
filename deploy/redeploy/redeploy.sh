@@ -109,9 +109,13 @@ sync_infra() {
   if [ -d "$ROOT/zunia-infra/deploy/uptime-kuma/brand" ]; then
     install -m 644 "$ROOT/zunia-infra/deploy/uptime-kuma/brand/"* /srv/zunia/shared/status-brand/
   fi
-  local conf
+  local conf base
   for conf in "$ROOT/zunia-infra/deploy/nginx/"*.conf; do
-    install -m 644 "$conf" "/etc/nginx/sites-available/$(basename "$conf")"
+    base="$(basename "$conf")"
+    install -m 644 "$conf" "/etc/nginx/sites-available/$base"
+    # sites-enabled holds its own copies, not links, so installing only into
+    # sites-available leaves nginx on the old file.
+    ln -sfn "/etc/nginx/sites-available/$base" "/etc/nginx/sites-enabled/$base"
   done
   install -m 755 "$ROOT/zunia-infra/deploy/redeploy/redeploy.sh" /srv/zunia/shared/redeploy.sh
   install -m 644 "$ROOT/zunia-infra/deploy/systemd/zunia-redeploy.service" /etc/systemd/system/zunia-redeploy.service
@@ -119,8 +123,6 @@ sync_infra() {
   install -m 644 "$ROOT/zunia-infra/deploy/systemd/zunia-dashboard.service" /etc/systemd/system/zunia-dashboard.service
   install -m 644 "$ROOT/zunia-infra/deploy/systemd/zunia-updates.service" /etc/systemd/system/zunia-updates.service
   install -m 644 "$ROOT/zunia-infra/deploy/systemd/zunia-mapzone.service" /etc/systemd/system/zunia-mapzone.service
-  ln -sfn /etc/nginx/sites-available/updates.zunialab.com.conf /etc/nginx/sites-enabled/updates.zunialab.com.conf
-  ln -sfn /etc/nginx/sites-available/ibcmap.zunialab.com.conf /etc/nginx/sites-enabled/ibcmap.zunialab.com.conf
   nginx -t
   systemctl reload nginx
   systemctl daemon-reload
