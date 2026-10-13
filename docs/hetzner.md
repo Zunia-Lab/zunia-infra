@@ -11,6 +11,7 @@ This host also runs other sites. Do not enable a host-wide firewall that would c
 | `zunialab.com`, `www` | `zunia-website` | `127.0.0.1:3010` |
 | `link.zunialab.com` | same website (App Links) | `127.0.0.1:3010` |
 | `docs.zunialab.com` | static `zunia-docs/build` | nginx root |
+| `docs.zunialab.com/mcp` | `zunia-mcp` (`zunia-sdk/packages/mcp`) | `127.0.0.1:3018` |
 | `app.zunialab.com` | `zunia-dashboard` (web app) | `127.0.0.1:3012` |
 | `wallet.zunialab.com`, `dashboard.zunialab.com` | 301 to `app.zunialab.com` | nginx |
 | `api.zunialab.com`, `backend.zunialab.com` | `zunia-backend` | `127.0.0.1:8788` |
@@ -103,3 +104,12 @@ The Turnstile widget and the Access application for `updates.zunialab.com/admin`
 - `/api/health` reports the registry, streaming zones and connected viewers.
 - The redeploy timer rebuilds it when `zunia-mapzone` or `zunia-ui` moves; it is skipped while `mapzone.env` is missing.
 
+
+## MCP server and llms.txt
+
+`https://docs.zunialab.com/mcp` is the Zunia MCP server, `@zunialab/mcp` from `zunia-sdk/packages/mcp`, run from the `zunia-sdk` checkout as `zunia-mcp.service` on `127.0.0.1:3018`. It is stateless Streamable HTTP, read-only and keyless.
+
+- It answers from `/srv/zunia/repos/zunia-docs/build/docs-index.json`, which every docs build writes next to `llms.txt`, `llms-full.txt` and one `.md` per page. It re-reads the file when a docs build replaces it, so a docs deploy needs no restart, and keeps the last good copy while a build runs.
+- The redeploy timer restarts it when `zunia-sdk` moves. `ensure_mcp_service` installs and starts the unit on any pass once `packages/mcp/dist/cli.js` exists, so it comes up without a separate step.
+- nginx proxies `= /mcp` and `= /mcp/health` without buffering. The `.md` copies, `llms.txt`, `llms-full.txt` and `docs-index.json` are served with `Access-Control-Allow-Origin: *` and `X-Robots-Tag: noindex`.
+- `/mcp/health` reports the docs build it reads (page count, build time, commit). The app rate-limits per `CF-Connecting-IP` (120 requests a minute) and accepts the `Host` `docs.zunialab.com` only.

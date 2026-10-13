@@ -1,0 +1,30 @@
+[Unit]
+Description=Zunia MCP server (docs.zunialab.com/mcp)
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=zunia
+Group=zunia
+# Built by the redeploy timer with the rest of zunia-sdk.
+WorkingDirectory=/srv/zunia/repos/zunia-sdk/packages/mcp
+Environment=PATH=/srv/zunia/toolchain/node/bin:/usr/bin:/bin
+Environment=NODE_ENV=production
+Environment=PORT=3018
+Environment=HOST=127.0.0.1
+# The docs build on this host. docs-index.json is re-read when a docs deploy rewrites it,
+# so a docs change needs no restart.
+Environment=ZUNIA_DOCS_DIR=/srv/zunia/repos/zunia-docs/build
+Environment=MCP_ALLOWED_HOSTS=docs.zunialab.com
+Environment=TRUST_PROXY=cloudflare
+ExecStart=/srv/zunia/toolchain/node/bin/node dist/cli.js --http
+Restart=on-failure
+RestartSec=5
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+
+[Install]
+WantedBy=multi-user.target
