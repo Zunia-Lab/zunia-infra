@@ -10,6 +10,7 @@ export NODE_OPTIONS="${NODE_OPTIONS:---max-old-space-size=3072}"
 ROOT=/srv/zunia/repos
 LOCK=/srv/zunia/shared/redeploy.lock
 DASH_ENV=/srv/zunia/shared/dashboard.env
+MCP_UNIT=/etc/systemd/system/zunia-mcp.service
 
 mkdir -p /srv/zunia/shared
 exec 9>"$LOCK"
@@ -103,6 +104,24 @@ build_repo() {
   fi
 }
 
+# The MCP server (docs.zunialab.com/mcp) runs from the zunia-sdk checkout. This
+# runs on every pass, not only when zunia-infra moves, so it comes up as soon as
+# zunia-sdk has built packages/mcp. It never fails the pass.
+ensure_mcp_service() {
+  local unit="$ROOT/zunia-infra/deploy/systemd/zunia-mcp.service"
+  [ -f "$unit" ] || return 0
+  [ -f "$ROOT/zunia-sdk/packages/mcp/dist/cli.js" ] || return 0
+  if ! cmp -s "$unit" "$MCP_UNIT"; then
+    log "install zunia-mcp.service"
+    install -m 644 "$unit" "$MCP_UNIT"
+    systemctl daemon-reload
+    systemctl enable zunia-mcp.service || log "zunia-mcp enable failed"
+    systemctl restart zunia-mcp.service || log "zunia-mcp start failed"
+  elif ! systemctl is-active --quiet zunia-mcp.service; then
+    systemctl start zunia-mcp.service || log "zunia-mcp start failed"
+  fi
+}
+
 sync_infra() {
   log "install nginx, status brand, and units"
   install -d -m 755 /srv/zunia/shared/status-brand
@@ -175,6 +194,9 @@ fi
 if [ "$sdk" = "changed" ]; then
   build_repo zunia-sdk
   dashboard=changed
+  if [ -f "$MCP_UNIT" ]; then
+    systemctl restart zunia-mcp.service || log "zunia-mcp restart failed"
+  fi
 fi
 if [ "$website" = "changed" ]; then
   build_repo zunia-website
@@ -219,5 +241,6 @@ fi
 if [ "$infra" = "changed" ]; then
   sync_infra
 fi
+ensure_mcp_service
 
 log "done"
